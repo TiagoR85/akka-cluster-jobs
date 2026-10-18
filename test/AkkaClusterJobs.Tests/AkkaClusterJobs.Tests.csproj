@@ -4,7 +4,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <Exclude>[*]*AkkaClusterJobs.Tests.*</Exclude>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="Xunit" />
