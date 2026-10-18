@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Akka.Actor;
+using Akka.Hosting;
 using Akka.TestKit;
 using Akka.TestKit.Xunit2;
 using AkkaClusterJobs.Actors;
@@ -14,12 +15,45 @@ public class SeedServiceSpecs : TestKit
         public bool IsReady => ready;
     }
 
+    private sealed class FakeRegistry(IActorRef stats, IActorRef region) : IActorRegistry
+    {
+        public void Register<T>(IActorRef actor, bool overwrite = false) { }
+        public bool TryRegister<T>(IActorRef actor, bool overwrite = false) => true;
+        public void Register(Type key, IActorRef actor, bool overwrite = false) { }
+        public bool TryRegister(Type key, IActorRef actor, bool overwrite = false) => true;
+        public bool TryGet<T>(out IActorRef actor)
+        {
+            actor = typeof(T) == typeof(StatsKey) ? stats : region;
+            return true;
+        }
+        public bool TryGet(Type key, out IActorRef actor)
+        {
+            actor = key == typeof(StatsKey) ? stats : region;
+            return true;
+        }
+        public IActorRef Get<T>()
+        {
+            return typeof(T) == typeof(StatsKey) ? stats : region;
+        }
+        public IActorRef Get(Type key)
+        {
+            return key == typeof(StatsKey) ? stats : region;
+        }
+        public Task<IActorRef> GetAsync<T>(CancellationToken ct = default)
+            => Task.FromResult(Get<T>());
+        public Task<IActorRef> GetAsync(Type key, CancellationToken ct = default)
+            => Task.FromResult(Get(key));
+        public IEnumerator<KeyValuePair<Type, IActorRef>> GetEnumerator() =>
+            Enumerable.Empty<KeyValuePair<Type, IActorRef>>().GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
     [Fact]
     public async Task Count_out_of_range_returns_400()
     {
         var stats = CreateTestProbe();
         var region = CreateTestProbe();
-        var svc = new SeedService(stats.Ref, region.Ref, new FakeReadiness(true));
+        var svc = new SeedService(new FakeRegistry(stats.Ref, region.Ref), new FakeReadiness(true));
 
         var tooSmall = await svc.SeedAsync(0, null, CancellationToken.None);
         Assert.Equal(400, tooSmall.StatusCode);
@@ -35,7 +69,7 @@ public class SeedServiceSpecs : TestKit
     {
         var stats = CreateTestProbe();
         var region = CreateTestProbe();
-        var svc = new SeedService(stats.Ref, region.Ref, new FakeReadiness(false));
+        var svc = new SeedService(new FakeRegistry(stats.Ref, region.Ref), new FakeReadiness(false));
 
         var resp = await svc.SeedAsync(10, null, CancellationToken.None);
         Assert.Equal(503, resp.StatusCode);
@@ -47,9 +81,8 @@ public class SeedServiceSpecs : TestKit
     {
         var stats = CreateTestProbe();
         var region = CreateTestProbe();
-        var svc = new SeedService(stats.Ref, region.Ref, new FakeReadiness(true));
+        var svc = new SeedService(new FakeRegistry(stats.Ref, region.Ref), new FakeReadiness(true));
 
-        // Auto-reply to TryRegisterSeed Ask: reply AlreadySeen=false
         _ = Task.Run(() =>
         {
             for (var i = 0; i < 2; i++)
@@ -71,10 +104,8 @@ public class SeedServiceSpecs : TestKit
     {
         var stats = CreateTestProbe();
         var region = CreateTestProbe();
-        var svc = new SeedService(stats.Ref, region.Ref, new FakeReadiness(true));
+        var svc = new SeedService(new FakeRegistry(stats.Ref, region.Ref), new FakeReadiness(true));
 
-        // First Ask: TryRegisterSeed → reply AlreadySeen=true
-        // Second Ask: GetLocalStats → reply LocalStats
         _ = Task.Run(() =>
         {
             stats.ReceiveOne(TimeSpan.FromSeconds(5));

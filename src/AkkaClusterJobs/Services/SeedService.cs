@@ -1,11 +1,11 @@
 using Akka.Actor;
+using Akka.Hosting;
 using AkkaClusterJobs.Actors;
 using AkkaClusterJobs.Util;
 
 namespace AkkaClusterJobs.Services;
 
-public sealed class SeedService(IActorRef stats, IActorRef region, IClusterReadiness readiness)
-    : ISeedService
+public sealed class SeedService(IActorRegistry registry, IClusterReadiness readiness) : ISeedService
 {
     public const int MinCount = 1;
     public const int MaxCount = 100_000;
@@ -19,6 +19,8 @@ public sealed class SeedService(IActorRef stats, IActorRef region, IClusterReadi
         if (!readiness.IsReady)
             return new SeedResponse(503, new { error = "cluster node is not Up" });
 
+        var stats = registry.Get<StatsKey>();
+        var region = registry.Get<JobRegion>();
         var p = string.IsNullOrWhiteSpace(prefix) ? "default" : prefix.Trim();
 
         var reg = await stats.Ask<SeedRegistrationResult>(new TryRegisterSeed(p), AskTimeout, ct);

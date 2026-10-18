@@ -6,9 +6,9 @@ using AkkaClusterJobs.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var hostname = Environment.GetEnvironmentVariable("AKKA_HOSTNAME") ?? "127.0.0.1";
-var remotingPort = int.Parse(Environment.GetEnvironmentVariable("AKKA_PORT") ?? "4000");
-var seedNodes = Environment.GetEnvironmentVariable("AKKA_SEED_NODES")
+var hostname = builder.Configuration["AKKA_HOSTNAME"] ?? "127.0.0.1";
+var remotingPort = int.Parse(builder.Configuration["AKKA_PORT"] ?? "4000");
+var seedNodes = builder.Configuration["AKKA_SEED_NODES"]
     ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 builder.Services.AddAkkaClusterJobs(hostname, remotingPort, seedNodes);
