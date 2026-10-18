@@ -14,7 +14,7 @@ public class JobEntitySpecs : TestKit
     [Fact]
     public void CreateJob_emits_pending_running_done_in_order()
     {
-        var entity = Sys.ActorOf(Props.Create(() => new JobEntity("job-a-000001", _stats.Ref)));
+        var entity = Sys.ActorOf(Props.Create(() => new JobEntity(_stats.Ref)));
         entity.Tell(new CreateJob("job-a-000001", "a", 50));
 
         _stats.ExpectMsg<StatsEntityUpdate>(u =>
@@ -26,7 +26,7 @@ public class JobEntitySpecs : TestKit
     [Fact]
     public void Duplicate_CreateJob_is_ignored()
     {
-        var entity = Sys.ActorOf(Props.Create(() => new JobEntity("job-b-000001", _stats.Ref)));
+        var entity = Sys.ActorOf(Props.Create(() => new JobEntity(_stats.Ref)));
         entity.Tell(new CreateJob("job-b-000001", "b", 50));
         entity.Tell(new CreateJob("job-b-000001", "b", 50));
 
@@ -39,7 +39,7 @@ public class JobEntitySpecs : TestKit
     [Fact]
     public void Negative_duration_is_clamped_to_zero()
     {
-        var entity = Sys.ActorOf(Props.Create(() => new JobEntity("job-c-000001", _stats.Ref)));
+        var entity = Sys.ActorOf(Props.Create(() => new JobEntity(_stats.Ref)));
         entity.Tell(new CreateJob("job-c-000001", "c", -100));
 
         _stats.ExpectMsg<StatsEntityUpdate>(u => u.State == JobState.Pending, TimeSpan.FromSeconds(2));

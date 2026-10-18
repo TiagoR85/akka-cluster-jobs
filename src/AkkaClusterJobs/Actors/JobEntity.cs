@@ -4,14 +4,13 @@ namespace AkkaClusterJobs.Actors;
 
 public sealed class JobEntity : ReceiveActor
 {
-    private readonly string _entityId;
     private readonly IActorRef _stats;
     private bool _started;
+    private string _entityId = "";
     private string _lastPrefix = "";
 
-    public JobEntity(string entityId, IActorRef stats)
+    public JobEntity(IActorRef stats)
     {
-        _entityId = entityId;
         _stats = stats;
 
         Receive<CreateJob>(OnCreateJob);
@@ -25,6 +24,7 @@ public sealed class JobEntity : ReceiveActor
     {
         if (_started) return; // idempotente: duplicados ignorados
         _started = true;
+        _entityId = msg.EntityId;
         _lastPrefix = msg.Prefix;
         _stats.Tell(new StatsEntityUpdate(_entityId, msg.Prefix, JobState.Pending));
         _stats.Tell(new StatsEntityUpdate(_entityId, msg.Prefix, JobState.Running));
