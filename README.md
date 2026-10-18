@@ -1,5 +1,7 @@
 # akka-cluster-jobs
 
+[![CI](https://github.com/TiagoR85/akka-cluster-jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/TiagoR85/akka-cluster-jobs/actions/workflows/ci.yml)
+
 A distributed job-processing demo built on **Akka.NET cluster sharding** with three nodes, idempotent seeding, and per-node stats aggregation.
 
 ## About this repository
