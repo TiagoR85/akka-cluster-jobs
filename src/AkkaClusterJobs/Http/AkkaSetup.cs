@@ -39,11 +39,12 @@ public static class AkkaSetup
                         .WithRememberEntities(true)
                         .WithStateStoreMode(StateStoreMode.DData);
 
-                    ClusterSharding.Get(system).Start(
+                    var region = ClusterSharding.Get(system).Start(
                         typeName: AkkaRegistration.JobTypeName,
                         entityProps: Props.Create(() => new JobEntity(stats)),
                         settings: settings,
                         messageExtractor: new JobMessageExtractor());
+                    registry.TryRegister<JobRegion>(region);
                 });
         });
 

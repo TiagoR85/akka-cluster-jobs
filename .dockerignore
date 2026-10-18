@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/coverage/
+**/.vs/
+**/.idea/
+**/*.user
+**/*.suo
+.git/
+.github/
+e2e/
+docs/
+*.md
+LICENSE

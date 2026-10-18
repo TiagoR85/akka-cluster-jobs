@@ -1,0 +1,63 @@
+services:
+  node1:
+    build: .
+    container_name: akka-node1
+    hostname: node1
+    environment:
+      AKKA_HOSTNAME: node1
+      AKKA_PORT: "4000"
+      AKKA_SEED_NODES: "akka.tcp://jobs@node1:4000"
+      ASPNETCORE_URLS: "http://+:8080"
+    ports:
+      - "18081:8080"
+      - "14001:4000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+
+  node2:
+    build: .
+    container_name: akka-node2
+    hostname: node2
+    environment:
+      AKKA_HOSTNAME: node2
+      AKKA_PORT: "4000"
+      AKKA_SEED_NODES: "akka.tcp://jobs@node1:4000"
+      ASPNETCORE_URLS: "http://+:8080"
+    ports:
+      - "18082:8080"
+      - "14002:4000"
+    depends_on:
+      node1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+
+  node3:
+    build: .
+    container_name: akka-node3
+    hostname: node3
+    environment:
+      AKKA_HOSTNAME: node3
+      AKKA_PORT: "4000"
+      AKKA_SEED_NODES: "akka.tcp://jobs@node1:4000"
+      ASPNETCORE_URLS: "http://+:8080"
+    ports:
+      - "18083:8080"
+      - "14003:4000"
+    depends_on:
+      node1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
