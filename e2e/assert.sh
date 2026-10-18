@@ -30,9 +30,9 @@ echo "  seed response: $resp"
 echo "== Waiting for convergence (done==$EXPECTED on all nodes) =="
 converged=0
 for i in $(seq 1 $TIMEOUT); do
-  d1=$(curl -sf "$NODE1/jobs/stats" | python3 -c "import sys,json; print(json.load(sys.stdin).get('Done',0))" 2>/dev/null || echo "0")
-  d2=$(curl -sf "$NODE2/jobs/stats" | python3 -c "import sys,json; print(json.load(sys.stdin).get('Done',0))" 2>/dev/null || echo "0")
-  d3=$(curl -sf "$NODE3/jobs/stats" | python3 -c "import sys,json; print(json.load(sys.stdin).get('Done',0))" 2>/dev/null || echo "0")
+  d1=$(curl -sf "$NODE1/jobs/stats" | python3 -c "import sys,json; print(json.load(sys.stdin).get('done',0))" 2>/dev/null || echo "0")
+  d2=$(curl -sf "$NODE2/jobs/stats" | python3 -c "import sys,json; print(json.load(sys.stdin).get('done',0))" 2>/dev/null || echo "0")
+  d3=$(curl -sf "$NODE3/jobs/stats" | python3 -c "import sys,json; print(json.load(sys.stdin).get('done',0))" 2>/dev/null || echo "0")
   total=$((d1 + d2 + d3))
   echo "  poll $i: done=$total (n1=$d1 n2=$d2 n3=$d3)"
 
