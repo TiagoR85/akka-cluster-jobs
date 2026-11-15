@@ -7,7 +7,7 @@ RUN dotnet restore src/AkkaClusterJobs/AkkaClusterJobs.csproj
 COPY src/ src/
 RUN dotnet publish src/AkkaClusterJobs/AkkaClusterJobs.csproj -c Release -o /app/publish /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish .
